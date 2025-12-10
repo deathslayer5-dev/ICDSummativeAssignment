@@ -20,7 +20,7 @@ items = [
         "Mint Tea" : 1.25
     }
 ]
-restaurantName = "Baguette cuisine"
+restaurantName = "Baguette Cuisine"
 order = {}
 margin = 30
 def menu():
@@ -43,6 +43,7 @@ def ordering():
     while True:
         print("Press \033[4mQ\033[0m to quit")
         print("Press \033[4mM\033[0m to see menu")
+        print("Press \033[4mO\033[0m to see order")
         userInput = input("What would you like to order? (\033[4mIndex\033[0m, \033[4mCategory\033[0m) or (\033[4mFull name\033[0m)\n").split(", ")
         if userInput[0].upper() == "Q":
             print("Quitting Operation...")
@@ -51,13 +52,20 @@ def ordering():
             print("Opening Menu...")
             menu()
             continue
+        if userInput[0].upper() == "O":
+            print("Viewing Order...")
+            viewOrder()
+            continue
         orderNo = 0
         category = ""
         name = False
         if(len(userInput) > 1):
+            userInput[1] = userInput[1][0].upper() + userInput[1][1:].lower()
             category = userInput[1]
             name =[]
+            index = -1
             for item in items:
+                index+=1
                 temp = [k for k, v in item.items() if v == -1]
                 name.extend(temp)
             if category not in name:
@@ -68,10 +76,11 @@ def ordering():
             except ValueError:
                 print("\033[4mPlease enter a valid index!\033[0m")
                 continue
-            if orderNo >= len(items) or orderNo < 1:
-                print("\033[4mPlease enter a valid index!\033[0m")
+            if orderNo >= len(items[index]) or orderNo < 1:
+                print("\033[4mPlease enter a valid index in range!\033[0m")
                 continue
         elif (len(userInput) == 1):
+            userInput[0] = userInput[0][0].upper()+userInput[0][1:].lower()
             name = True
             allItems =[]
             for item in items:
@@ -117,6 +126,7 @@ def editOrder():
     viewOrder()
     print("Press \033[4mQ\033[0m to quit")
     while True:
+
         userInput = input(f"What would you like to change (1-{len(order)}, Qty)(ex1: 1, -2)(ex2: 1, 2)? ").split(", ")
         if userInput[0].upper() == "Q":
             print("Quitting Operation...")
@@ -129,7 +139,7 @@ def editOrder():
         except ValueError:
             print("\033[4mPlease enter a valid index or quantity!\033[0m")
             continue
-        if qty == 0 or (index >= len(order) or index < 1):
+        if qty == 0 or (index > len(order) or index < 1):
             print("\033[4mPlease enter a valid index or quantity!\033[0m")
             continue
         curr = 1
@@ -138,34 +148,40 @@ def editOrder():
                 order[key] += qty
                 break
             curr +=1
-        if order[key] == 0:
+        if order[key] <= 0:
             del order[key]
+        viewOrder()
 tip = -1
+total = 0
 def showReceipt():
     global restaurantName
     print(f"\n\033[1m\033[4m{restaurantName}\033[0m")
-    print('-'*42)
+    print('-'*47)
+    print(f"#   Name{' '*12}Price{' ' * 3}Qty{' ' * 5} Total")
+    print('-' * 47)
+    global total
     total = 0
     index =1
     for key in order:
         for item in items:
             if item.get(key) is not None:
-                print(f"\t#{index} \033[4m{key}\033[0m {' ' * (margin - 10 - (len(str(index)) + 4 + len(key)))}${item[key]:.2f} Qty: {order[key]} {' ' * (margin - len(f'\t#{index} \033[4m{key}\033[0m {' ' * (margin - 20 - (len(str(index)) + 4 + len(key)))}${item[key]:.2f} Qty: {order[key]}'))}${item[key] * order[key]:.2f}")
+                print(f"#{index}\t\033[4m{key}\033[0m {' ' * (margin - 10 - (len(str(index)) + 4 + len(key)))}${item[key]:.2f}   Qty: {order[key]} {' ' * (margin - len(f'\t#{index} \033[4m{key}\033[0m {' ' * (margin - 20 - (len(str(index)) + 4 + len(key)))}${item[key]:.2f} Qty: {order[key]}'))}  ${item[key] * order[key]:.2f}")
                 total += item[key] * order[key]
                 break
         index += 1
     if index == 1:
         print("Nothing in order")
-    print('-' * 42)
-    print(f"Sub-Total: {' '*25}${total:.2f}")
-    print(f"Tax(HST @ 13%): {' ' * 20}${0.13*total:.2f}")
+    print('-' * 47)
+    print(f"Sub-Total: {' '*29}${total:.2f}")
+    print(f"Tax(HST @ 13%): {' ' * 24}${0.13*total:.2f}")
     global tip
     if tip > -1:
-        print(f"Tips({tip}%): {' ' * 25}${(tip/100)*total:.2f}")
-        print(f"Final Total: {' ' * 23}${(tip/100)*total + 1.13 * total:.2f}")
+        padding = (30 if tip == 0 else 29)
+        print(f"Tips({tip}%): {' ' * padding}${(tip/100)*total:.2f}")
+        print(f"Final Total: {' ' * 27}${(tip/100)*total + 1.13 * total:.2f}")
     else:
-        print(f"Final Total: {' '*23}${1.13*total:.2f}")
-    print('-' * 42)
+        print(f"Final Total: {' '*27}${1.13*total:.2f}")
+    print('-' * 47)
 
     print("Thank You for coming to Baguette Cuisine\n")
 def pay():
@@ -173,7 +189,7 @@ def pay():
     global tip
     global total
     while True:
-        userInput = input("Choose a tip you would like to pay (1. 10%) (2. 15%) (3. 20%) (4. 0%): ")
+        userInput = input("Choose a tip you would like to pay ([1] 10%) ([2] 15%) ([3] 20%) ([4] 0%): ")
         try:
             userInput = int(userInput)
         except ValueError:
@@ -197,7 +213,7 @@ def pay():
                 break
     showReceipt()
     while True:
-        method = input("Will you be paying with cash or credit card (1. Cash) (2. Credit Card): ")
+        method = input("Will you be paying with cash or credit card ([1] Cash) ([2] Credit Card): ")
         try:
             method = int(method)
         except ValueError:
@@ -209,14 +225,14 @@ def pay():
         if(method == 1):
             amount = input("How much cash will you be paying: ")
             try:
-                method = int(method)
+                amount = int(amount)
             except ValueError:
                 print("Please give valid number")
                 continue
             if amount < total:
                 print("Please give more than or equal to total cost")
                 continue
-            print(f"Your change is ${total-amount:.2f}")
+            print(f"Your change is ${amount-((tip/100)*total + 1.13 * total):.2f}")
             break
         elif method == 2:
             company = input("Are you using Visa, Mastercard or American Express (1. Visa) (2. Mastercard) (3. American Express): ")
@@ -240,9 +256,10 @@ def pay():
                 print("Please give a valid PIN")
                 continue
             break
-
+    global restaurantName
     print("Your payment was successful")
-    SystemExit(1)
+    print(f"Thank You for coming to \033[1m\033[4m{restaurantName}\033[0m\n")
+    exit(1)
             
         
 def controls():
@@ -267,7 +284,8 @@ def controls():
     if 'R' in userInput.upper():
         return showReceipt()
     if 'Q' in userInput.upper():
-        return None
+        print(f"Thank You for coming to \033[1m\033[4m{restaurantName}\033[0m\n")
+        exit(0)
     return None
 while True:
     controls()
