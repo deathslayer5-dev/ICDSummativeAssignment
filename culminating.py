@@ -14,10 +14,7 @@ items = [
         "Pain au Chocolat" : 2,
         "6x Chocolate chip cookie" : 3.5,
         "Loaf of Sourdough" : 8,
-        #Rmove this
         "Egg Sandwich" : 2,
-        "Vincent's Eggs" : 2
-
     },
     #Drinks
     {
@@ -66,7 +63,7 @@ def format_receipt_line(index: int, name: str, qty: int, price: float) -> str:
     return f"{item_label} {' ' * padding}${price:.2f}   Qty: {qty}   ${total_price:.2f}"
 
 
-def get_numeric_choice(prompt: str, min_value: int, max_value: int) -> int:
+def get_numeric_choice(prompt: str, min_value: int, max_value: int) -> int | None:
     """Prompt until the user supplies a valid integer within the given range."""
     while True:
         user_input = input(prompt)
@@ -83,19 +80,28 @@ def get_numeric_choice(prompt: str, min_value: int, max_value: int) -> int:
 
 def menu():
     """Display menu categories with formatted pricing."""
-    print(f"\nWelcome to \033[1m\033[4m{restaurantName}\033[0m!")
+    length = 45
+    print()
+    print('-'*length)
+    print(f"{' '*5}Welcome to \033[1m\033[4m{restaurantName}\033[0m!")
+    print('-' * length)
+    padding = max(margin - (len("#") + 3 + len("Item")), 0)
+    print(f"\t#  \033[4mItem\033[0m {' ' * padding}Price")
+    print('=' * length)
     # Walk through each category dictionary and display the items
-    print("Here is your menu.\n")
     for item in items:
         name = [k for k, v in item.items() if v == -1]
         name = name[0]
-        print(f"\033[1m{name}\033[0m(")
+        string = f"\033[1m{name}\033[0m".center(length)
+        print(f"\n\t{string}")
         index = 0
+
         for content in item:
             if index != 0:
                 print(format_menu_line(index, content, item[content]))
             index += 1
-        print(")")
+        print(f"\n{'*' * length}")
+    print()
 def ordering():
     """Handle taking orders from the user with menu and validation controls."""
     menu()
@@ -107,6 +113,8 @@ def ordering():
         print("Press \033[4mO\033[0m to see order")
         # Expect either "index, category" or "full item name" input formats
         userInput = input("What would you like to order? (\033[4mIndex\033[0m, \033[4mCategory\033[0m) or (\033[4mFull name\033[0m)\n").split(", ")
+        if userInput == "":
+            continue
         if userInput[0].upper() == "Q":
             print("Quitting Operation...")
             break
@@ -131,6 +139,8 @@ def ordering():
                 index+=1
                 temp = [k for k, v in item.items() if v == -1]
                 name.extend(temp)
+                if category in name:
+                    break
             if category not in name:
                 print("\033[4mPlease enter a valid category!\033[0m")
                 continue
@@ -206,6 +216,8 @@ def editOrder():
     while True:
 
         userInput = input(f"What would you like to change (1-{len(order)}, Qty)(ex1: 1, -2)(ex2: 1, 2)? ").split(", ")
+        if userInput == "":
+            continue
         if userInput[0].upper() == "Q":
             print("Quitting Operation...")
             break
@@ -273,6 +285,8 @@ def pay():
     global total
     while True:
         userInput = get_numeric_choice("Choose a tip you would like to pay ([1] 10%) ([2] 15%) ([3] 20%) ([4] 0%): ", 1, 4)
+        if userInput == "":
+            continue
         match userInput:
             case 1:
                 tip = 10
