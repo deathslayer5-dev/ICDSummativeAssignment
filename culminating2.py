@@ -7,8 +7,6 @@ an opportunity to adjust the card's numeric value by ±1 before it is applied.
 
 """
 
-from __future__ import annotations
-
 import random
 import sys
 from typing import Dict, List, Tuple
@@ -135,6 +133,7 @@ QUESTIONS: Dict[str, List[str]] = {
 deck: List[str] = []
 value: int = 0
 score: int = 0
+turns: int = 1
 cards_left: int = sum(CARD_TEMPLATE.values())
 question_order: List[str] = list(QUESTIONS.keys())
 random.shuffle(question_order)
@@ -316,17 +315,25 @@ def display_status() -> None:
     print(
         f"Current hand value: {Style.BOLD}{value}{Style.RESET} | "
         f"Cumulative score: {Style.BOLD}{score}{Style.RESET} | "
-        f"Cards remaining in deck: {cards_left}"
+        f"Cards remaining in deck: {cards_left} | "
+        f"Current turn in deck: {turns}"
     )
 
 
 def actual_gameplay() -> None:
     """Handles the player's decision to hit or stand for the current round."""
-
+    global score
+    global turns
     display_status()
+
+    if score >= 100:
+        print(f"{Style.SUCCESS}{Style.BOLD}{Style.UNDERLINE}YOU WIN{Style.RESET}")
+
     print("Choose your next move:")
     print("  [1] Hit  → Draw another card")
     print("  [2] Stand → Bank your current hand into the total score")
+
+    turns+=1
 
     while True:
         choice = prompt("Selection: ").lower()
@@ -356,6 +363,9 @@ def handle_hit() -> None:
         print(f"{Style.ERROR}{Style.UNDERLINE}BUST!{Style.RESET} Your hand exceeded 21.")
         print(f"Final cumulative score: {Style.BOLD}{score}{Style.RESET}")
         sys.exit(0)
+    elif value == 21:
+        print(f"{Style.ERROR}{Style.UNDERLINE}21!{Style.RESET} YOU HIT 21")
+        handle_stand()
     else:
         print(f"Your updated hand value is {Style.BOLD}{value}{Style.RESET}. Keep going!\n")
 
