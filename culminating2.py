@@ -316,7 +316,7 @@ def display_status() -> None:
         f"Current hand value: {Style.BOLD}{value}{Style.RESET} | "
         f"Cumulative score: {Style.BOLD}{score}{Style.RESET} | "
         f"Cards remaining in deck: {cards_left} | "
-        f"Current turn in deck: {turns}"
+        f"Current turn: {turns}"
     )
 
 
@@ -328,6 +328,7 @@ def actual_gameplay() -> None:
 
     if score >= 100:
         print(f"{Style.SUCCESS}{Style.BOLD}{Style.UNDERLINE}YOU WIN{Style.RESET}")
+        sys.exit(1)
 
     print("Choose your next move:")
     print("  [1] Hit  → Draw another card")
